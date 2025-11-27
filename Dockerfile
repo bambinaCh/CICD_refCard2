@@ -1,28 +1,23 @@
-# Build Stage: React App bauen
-FROM node:20-alpine AS build
+# Build stage: React App bauen
+FROM node:16-alpine AS build
 
-# Arbeitsordner im Container
 WORKDIR /app
 
-# Nur package Dateien zuerst kopieren (Cache fuer Abhaengigkeiten)
+# Nur package Dateien kopieren und Dependencies installieren
 COPY package*.json ./
-
-# Dependencies installieren
 RUN npm ci
 
-# Restlichen Code kopieren
+# Restlichen Code kopieren und bauen
 COPY . .
-
-# React App fuer Produktion bauen
 RUN npm run build
 
-# Runtime Stage: Nginx als Webserver
-FROM nginx:1.27-alpine
+# Runtime stage: Nginx, um das Build zu serven
+FROM nginx:alpine
 
-# Gebaute Dateien in das Standard Web Verzeichnis von Nginx kopieren
+# Build in den Standard Nginx Ordner legen
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Port 80 im Container freigeben
+# Port 80 nach aussen oeffnen
 EXPOSE 80
 
 # Nginx im Vordergrund starten
